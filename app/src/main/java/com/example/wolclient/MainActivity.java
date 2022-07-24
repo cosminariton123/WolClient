@@ -29,29 +29,14 @@ public class MainActivity extends AppCompatActivity {
         makeConnection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!isConnected){
-                    String message;
-                    message = startConnection(Config.host, Config.port);
-                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-                    if (!message.equals("Conexiune pornita cu succes")){
-                        Toast.makeText(getApplicationContext(), "Verifica conexiunea la internet si incearca din nou sau verifica serverul", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                else
-                    Toast.makeText(getApplicationContext(), "Deja conectat", Toast.LENGTH_SHORT).show();
+                startConnectionWithMessageEncapsulation(Config.host, Config.port);
             }
         });
 
         closeConnection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (isConnected) {
-                    String message;
-                    message = closeConnection();
-                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-                }
-                else
-                    Toast.makeText(getApplicationContext(), "Inca nu exista conexiune", Toast.LENGTH_SHORT).show();
+                closeConnectionWithMessageEncapsulation();
             }
         });
 
@@ -100,14 +85,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
-    public void onDestroy () {
-        String message = closeConnection();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-        super.onDestroy();
+    public void onPause(){
+        closeConnectionWithMessageEncapsulation();
+        super.onPause();
     }
 
-
+    public void onResume(){
+        startConnectionWithMessageEncapsulation(Config.host, Config.port);
+        super.onResume();
+    }
 
 
     private String startConnection(String host, Integer port){
@@ -129,6 +115,19 @@ public class MainActivity extends AppCompatActivity {
         return networkWorker.getMessage();
     }
 
+    private void startConnectionWithMessageEncapsulation(String host, Integer port) {
+        if (!isConnected){
+            String message;
+            message = startConnection(host, port);
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+            if (!message.equals("Conexiune pornita cu succes")){
+                Toast.makeText(getApplicationContext(), "Verifica conexiunea la internet si incearca din nou sau verifica serverul", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else
+            Toast.makeText(getApplicationContext(), "Deja conectat", Toast.LENGTH_SHORT).show();
+    }
+
     private String closeConnection() {
         NetworkWorker networkWorker = new NetworkWorker() {
             @Override
@@ -145,6 +144,16 @@ public class MainActivity extends AppCompatActivity {
 
         startSeparateThreadToDoDirtyWorkAndWait(networkWorker);
         return networkWorker.getMessage();
+    }
+
+    private void closeConnectionWithMessageEncapsulation(){
+        if (isConnected) {
+            String message;
+            message = closeConnection();
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        }
+        else
+            Toast.makeText(getApplicationContext(), "Nu exista conexiune de inchis", Toast.LENGTH_SHORT).show();
     }
 
 
